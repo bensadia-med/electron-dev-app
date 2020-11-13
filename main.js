@@ -10,16 +10,6 @@ function createWindow () {
 
   let ses = session.defaultSession
 
-  let getCookies = () => {
-    ses.cookies.get({ name:'cookie1' })
-      .then( cookies => {
-        console.log(cookies)
-      })
-      .catch( errors => {
-        console.log(errors)
-      })
-  }
-
   mainWindow = new BrowserWindow({
     width: 1000, height: 800,
     webPreferences: { nodeIntegration: true }
@@ -27,27 +17,29 @@ function createWindow () {
 
   // Load index.html into the new BrowserWindow
   mainWindow.loadFile('index.html')
-  // mainWindow.loadURL('https://github.com')
-
-  ses.cookies.remove('https://myappdomain.com', 'cookie1')
-    .then( () => {
-      getCookies()
-    })
-
-  // let cookie = { url:'https://myappdomain.com', name:'cookie1', value:'electron', expirationDate:1622818789 }
-  //
-  // ses.cookies.set(cookie)
-  //   .then( () => {
-  //     console.log('cookie1 set')
-  //     getCookies()
-  //   })
-
-  // mainWindow.webContents.on('did-finish-load', e => {
-  //   getCookies()
-  // })
 
   // Open DevTools - Remove for PRODUCTION!
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
+
+  ses.on('will-download', (e, downloadItem, webContents) => {
+
+    let fileName = downloadItem.getFilename()
+    let fileSize = downloadItem.getTotalBytes()
+
+    // Save to desktop
+    downloadItem.setSavePath(app.getPath('desktop') + `/${fileName}`)
+
+    downloadItem.on('updated', (e, state) => {
+
+      let received = downloadItem.getReceivedBytes()
+
+      if (state === 'progressing' && received) {
+
+        let progress = Math.round((received/fileSize)*100)
+        webContents.executeJavaScript(`window.progress.value = ${progress}`)
+      }
+    })
+  })
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
