@@ -10,32 +10,45 @@
   </head>
   <body>
 
-    <button onclick="showSite()">Launch Electron.js Site</button><br>
-    <button onclick="openSplash()">Open Splash.png</button><br>
-    <button onclick="showSplashFile()">Show Splash.png</button><br>
-    <button onclick="deleteSplashFile()">Delete Splash.png</button><br>
+    <h1>Convert splash.png:</h1>
+
+    <button onclick="toPng()">PNG</button>
+    <button onclick="toJpg()">JPG</button>
+    <button onclick="toTag()">Show</button>
+    <br>
+    <img src="" id="preview">
 
     <script>
 
-      const { shell } = require('electron')
+      const { nativeImage, ipcRenderer } = require('electron')
+      const fs = require('fs')
 
-      const showSite = e => {
-        shell.openExternal('https://electronjs.org')
+      const splash = nativeImage.createFromPath(`${__dirname}/splash.png`)
+
+      const saveToDesktop = async ( data, ext ) => {
+
+        let desktopPath = await ipcRenderer.invoke( 'app-path' )
+        fs.writeFile( `${desktopPath}/splash.${ext}`, data, console.log )
       }
 
-      const splashPath = `${__dirname}/splash.png`
+      const toTag = e => {
 
-      const openSplash = e => {
-        shell.openPath(splashPath)
+        let size = splash.getSize()
+
+        let splashURL = splash.resize({ width: Math.round(size.width/4), height: Math.round(size.height/4) }).toDataURL()
+        document.getElementById('preview').src = splashURL
       }
 
-      const showSplashFile = e => {
-        shell.showItemInFolder(splashPath)
+      const toPng = e => {
+        let pngSplash = splash.toPNG()
+        saveToDesktop( pngSplash, 'png' )
       }
 
-      const deleteSplashFile = e => {
-        shell.moveItemToTrash(splashPath)
+      const toJpg = e => {
+        let jpgSplash = splash.toJPEG(100)
+        saveToDesktop( jpgSplash, 'jpg' )
       }
+
 
     </script>
   </body>
