@@ -1,9 +1,12 @@
 // Modules
-const {app, BrowserWindow, globalShortcut} = require('electron')
+const {app, BrowserWindow, Menu, MenuItem} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+
+let mainMenu = Menu.buildFromTemplate( require('./mainMenu') )
+
 
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
@@ -19,10 +22,7 @@ function createWindow () {
   // Open DevTools - Remove for PRODUCTION!
   mainWindow.webContents.openDevTools();
 
-  globalShortcut.register('CommandOrControl+G', () => {
-    console.log('User pressed G with a combination key')
-    globalShortcut.unregister('CommandOrControl+G')
-  })
+  Menu.setApplicationMenu(mainMenu)
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
