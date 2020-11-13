@@ -1,5 +1,5 @@
 // Modules
-const {app, BrowserWindow, session} = require('electron')
+const {app, BrowserWindow, dialog} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -7,8 +7,6 @@ let mainWindow
 
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
-
-  let ses = session.defaultSession
 
   mainWindow = new BrowserWindow({
     width: 1000, height: 800,
@@ -21,24 +19,31 @@ function createWindow () {
   // Open DevTools - Remove for PRODUCTION!
   // mainWindow.webContents.openDevTools();
 
-  ses.on('will-download', (e, downloadItem, webContents) => {
+  mainWindow.webContents.on('did-finish-load', () => {
 
-    let fileName = downloadItem.getFilename()
-    let fileSize = downloadItem.getTotalBytes()
+    // dialog.showOpenDialog({
+    //   buttonLabel: 'Select a photo',
+    //   defaultPath: app.getPath('desktop'),
+    //   properties: ['multiSelections', 'createDirectory', 'openFile', 'openDirectory']
+    // }).then( result => {
+    //   console.log(result)
+    // })
 
-    // Save to desktop
-    downloadItem.setSavePath(app.getPath('desktop') + `/${fileName}`)
+    // dialog.showSaveDialog({}).then( result => {
+    //   console.log(result)
+    // })
 
-    downloadItem.on('updated', (e, state) => {
+    const answers = ['Yes', 'No', 'Maybe']
 
-      let received = downloadItem.getReceivedBytes()
-
-      if (state === 'progressing' && received) {
-
-        let progress = Math.round((received/fileSize)*100)
-        webContents.executeJavaScript(`window.progress.value = ${progress}`)
-      }
+    dialog.showMessageBox({
+      title: 'Message Box',
+      message: 'Please select an option',
+      detail: 'Message details.',
+      buttons: answers
+    }).then( result => {
+      console.log(`User selected: ${answers[result.response]}`)
     })
+
   })
 
   // Listen for window being closed
