@@ -1,11 +1,6 @@
 // Modules
 const {app, BrowserWindow} = require('electron')
 
-// setTimeout( () => {
-//   console.log('Checking ready: ' + app.isReady())
-// }, 2000)
-
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
@@ -16,14 +11,18 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1000, height: 800,
     webPreferences: { nodeIntegration: true },
+    // show: false,
     backgroundColor: '#2B2E3B'
   })
 
   // Load index.html into the new BrowserWindow
   mainWindow.loadFile('index.html')
+  // mainWindow.loadURL('https://google.com')
 
   // Open DevTools - Remove for PRODUCTION!
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
+
+  // mainWindow.once('ready-to-show', mainWindow.show)
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
@@ -31,29 +30,8 @@ function createWindow () {
   })
 }
 
-// app.on('browser-window-blur', e => {
-//   setTimeout(app.quit, 3000)
-// })
-
-// app.on('browser-window-focus', e => {
-//   console.log('App focused')
-// })
-
-// app.on('before-quit', e => {
-//   console.log('Preventing app from quitting')
-//   e.preventDefault()
-// })
-
 // Electron `app` is ready
-app.on('ready', () => {
-
-  console.log(app.getPath('desktop'))
-  console.log(app.getPath('music'))
-  console.log(app.getPath('temp'))
-  console.log(app.getPath('userData'))
-
-  createWindow()
-})
+app.on('ready', createWindow)
 
 // Quit when all windows are closed - (Not macOS - Darwin)
 app.on('window-all-closed', () => {
