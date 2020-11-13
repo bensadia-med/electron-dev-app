@@ -1,6 +1,5 @@
 // Modules
-const {app, BrowserWindow} = require('electron')
-const windowStateKeeper = require('electron-window-state')
+const {app, BrowserWindow, webContents} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,24 +8,58 @@ let mainWindow
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
 
-  // Window state manager
-  let winState = windowStateKeeper({
-    defaultWidth: 1000, defaultHeight: 800
-  })
-
   mainWindow = new BrowserWindow({
-    width: winState.width, height: winState.height,
-    x: winState.x, y: winState.y,
+    width: 1000, height: 800,
+    x: 100, y: 100,
     webPreferences: { nodeIntegration: true }
   })
 
   // Load index.html into the new BrowserWindow
   mainWindow.loadFile('index.html')
+  // mainWindow.loadURL('https://httpbin.org/basic-auth/user/passwd')
 
   // Open DevTools - Remove for PRODUCTION!
   // mainWindow.webContents.openDevTools();
 
-  winState.manage(mainWindow)
+  let wc = mainWindow.webContents
+
+  wc.on('context-menu', (e, params) => {
+    let selectedText = params.selectionText
+    wc.executeJavaScript(`alert("${selectedText}")`)
+  })
+
+  // wc.on('media-started-playing', () => {
+  //   console.log('Video Started')
+  // })
+  // wc.on('media-paused', () => {
+  //   console.log('Video Paused')
+  // })
+
+  // wc.on('login', (e, request, authInfo, callback) => {
+  //   console.log('Logging in:')
+  //   callback('user', 'passwd')
+  // })
+  //
+  // wc.on('did-navigate', (e, url, statusCode, message) => {
+  //   console.log(`Navigated to: ${url}`)
+  //   console.log(statusCode)
+  // })
+
+  // wc.on('new-window', (e, url) => {
+  //   e.preventDefault()
+  //   console.log(`Preventing new window for: ${url}`)
+  // })
+
+  // wc.on('before-input-event', (e, input) => {
+  //   console.log(`${input.key} : ${input.type}`)
+  // })
+
+  // wc.on('did-finish-load', () => {
+  //   console.log('Content fully loaded')
+  // })
+  // wc.on('dom-ready', () => {
+  //   console.log('DOM Ready')
+  // })
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
