@@ -1,5 +1,5 @@
 // Modules
-const {app, BrowserWindow, dialog} = require('electron')
+const {app, BrowserWindow, globalShortcut} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -17,33 +17,11 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open DevTools - Remove for PRODUCTION!
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
-  mainWindow.webContents.on('did-finish-load', () => {
-
-    // dialog.showOpenDialog({
-    //   buttonLabel: 'Select a photo',
-    //   defaultPath: app.getPath('desktop'),
-    //   properties: ['multiSelections', 'createDirectory', 'openFile', 'openDirectory']
-    // }).then( result => {
-    //   console.log(result)
-    // })
-
-    // dialog.showSaveDialog({}).then( result => {
-    //   console.log(result)
-    // })
-
-    const answers = ['Yes', 'No', 'Maybe']
-
-    dialog.showMessageBox({
-      title: 'Message Box',
-      message: 'Please select an option',
-      detail: 'Message details.',
-      buttons: answers
-    }).then( result => {
-      console.log(`User selected: ${answers[result.response]}`)
-    })
-
+  globalShortcut.register('CommandOrControl+G', () => {
+    console.log('User pressed G with a combination key')
+    globalShortcut.unregister('CommandOrControl+G')
   })
 
   // Listen for window being closed
