@@ -13,23 +13,19 @@
     <h1>Hello Electron!</h1>
     <p>Build cross-platform desktop apps with JavaScript, HTML, and CSS</p>
 
+    <p>Using Node.js <script>document.write( versions.node )</script> and Electron <script>document.write( versions.electron )</script></p>
+
+    <br><textarea id="content" rows="8" cols="80"></textarea>
+    <br><button id="save" onclick="saveText()">Save Content</button>
+
     <script>
 
-      const { remote } = require('electron')
+      const saveText = e => {
 
-      const self = remote.getCurrentWindow()
+        const text = document.getElementById('content').value
 
-      setTimeout( () => {
-
-        let notification = new Notification( 'Electron App', {
-          body: 'Some notification info!'
-        })
-
-        notification.onclick = e => {
-          if( !self.isVisible() ) self.show()
-        }
-        console.log(notification)
-      }, 2000)
+        writeToFile( text )
+      }
 
     </script>
   </body>
