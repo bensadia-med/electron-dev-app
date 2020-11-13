@@ -10,30 +10,14 @@
   </head>
   <body>
 
-    <img src="https://placekitten.com/450/300" alt="">
-    <br>
-    <button onclick="zoomUp()">Increase Zoom</button>
-    <button onclick="zoomDown()">Decrease Zoom</button>
-    <button onclick="zoomReset()">Reset Zoom</button>
+    <h1>Hello Electron!</h1>
+
+    <img width="100%" src="" id="screenshot"><br>
+    <button id="screenshot-button">Get Screenshot</button>
 
     <script>
-
-      const { webFrame } = require('electron')
-
-      const zoomUp = () => {
-        webFrame.setZoomLevel( webFrame.getZoomLevel() + 1 )
-      }
-
-      const zoomDown = () => {
-        webFrame.setZoomLevel( webFrame.getZoomLevel() - 1 )
-      }
-
-      const zoomReset = () => {
-        webFrame.setZoomLevel( 1 )
-      }
-
-      console.log( webFrame.getResourceUsage() )
-
+      // You can also require other files to run in this process
+      require('./renderer.js')
     </script>
   </body>
 </html>
