@@ -2,27 +2,27 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const { ipcRenderer } = require('electron')
+const { remote } = require('electron')
+const { dialog, BrowserWindow } = remote
 
-let i = 1
-setInterval( () => {
-  console.log(i)
-  i++
-}, 1000)
+setTimeout( () => {
 
-document.getElementById('talk').addEventListener('click', e => {
+  // dialog.showMessageBox({
+  //   message: 'Dialog from renderer',
+  //   buttons: ['One', 'Two']
+  // }).then( res => {
+  //   console.log(res)
+  // })
 
-  // ipcRenderer.send( 'channel1', 'Hello from main window')
+  // let win = new BrowserWindow({
+  //   x: 50, y: 50, width: 300, height: 250
+  // })
+  //
+  // win.loadFile('index.html')
+  //
+  // setTimeout( remote.app.quit, 2000)
 
-  let response = ipcRenderer.sendSync( 'sync-message', 'Waiting for response')
-  console.log(response)
+  let mainWindow = remote.getCurrentWindow()
+  mainWindow.maximize()
 
-})
-
-ipcRenderer.on( 'channel1-response', (e, args) => {
-  console.log(args)
-})
-
-ipcRenderer.on( 'mailbox', (e, args) => {
-  console.log(args)
-})
+}, 2000)
