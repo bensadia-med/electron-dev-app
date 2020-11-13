@@ -10,24 +10,26 @@
   </head>
   <body>
 
-    <h1>App is: <u id="status"></u></h1>
+    <h1>Hello Electron!</h1>
+    <p>Build cross-platform desktop apps with JavaScript, HTML, and CSS</p>
 
     <script>
 
-      const setStatus = status => {
-        const statusNode = document.getElementById('status')
-        statusNode.innerText = status ? 'Online' : 'Offline'
-      }
+      const { remote } = require('electron')
 
-      setStatus( navigator.onLine )
+      const self = remote.getCurrentWindow()
 
-      window.addEventListener( 'online', e => {
-        setStatus(true)
-      })
+      setTimeout( () => {
 
-      window.addEventListener( 'offline', e => {
-        setStatus(false)
-      })
+        let notification = new Notification( 'Electron App', {
+          body: 'Some notification info!'
+        })
+
+        notification.onclick = e => {
+          if( !self.isVisible() ) self.show()
+        }
+
+      }, 2000)
 
     </script>
   </body>
