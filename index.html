@@ -6,30 +6,33 @@
     <title>Hello World!</title>
     <style>
       html { font-family: sans-serif; background: #2B2E3B; color: #9FEAF9; }
-      a { color: white; }
     </style>
   </head>
   <body>
 
-    <h3><a href="#" onclick="newWin()">New Window</a></h3>
-    <h3><a href="#" onclick="closeWin()">Close Window</a></h3>
-    <h3><a href="#" onclick="styleWin()">Bad Fonts</a></h3>
+    <img src="https://placekitten.com/450/300" alt="">
+    <br>
+    <button onclick="zoomUp()">Increase Zoom</button>
+    <button onclick="zoomDown()">Decrease Zoom</button>
+    <button onclick="zoomReset()">Reset Zoom</button>
 
     <script>
 
-      let win
+      const { webFrame } = require('electron')
 
-      const newWin = () => {
-        win = window.open('https://developer.mozilla.org', '_blank', 'width=500,height=450,alwaysOnTop=1')
+      const zoomUp = () => {
+        webFrame.setZoomLevel( webFrame.getZoomLevel() + 1 )
       }
 
-      const closeWin = () => {
-        win.close()
+      const zoomDown = () => {
+        webFrame.setZoomLevel( webFrame.getZoomLevel() - 1 )
       }
 
-      const styleWin = () => {
-        win.eval("document.getElementsByTagName('h1')[0].style.fontFamily = 'Comic Sans MS'")
+      const zoomReset = () => {
+        webFrame.setZoomLevel( 1 )
       }
+
+      console.log( webFrame.getResourceUsage() )
 
     </script>
   </body>
