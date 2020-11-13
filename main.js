@@ -3,46 +3,55 @@ const {app, BrowserWindow, session} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow, secWindow
+let mainWindow
 
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
+
+  let ses = session.defaultSession
+
+  let getCookies = () => {
+    ses.cookies.get({ name:'cookie1' })
+      .then( cookies => {
+        console.log(cookies)
+      })
+      .catch( errors => {
+        console.log(errors)
+      })
+  }
 
   mainWindow = new BrowserWindow({
     width: 1000, height: 800,
     webPreferences: { nodeIntegration: true }
   })
-  secWindow = new BrowserWindow({
-    width: 800, height: 600,
-    x: 200, y: 200,
-    webPreferences: {
-      nodeIntegration: true,
-      partition: 'persist:part1'
-    }
-  })
-
-  let ses = mainWindow.webContents.session
-  let ses2 = secWindow.webContents.session
-  let defaultSes = session.defaultSession
-
-  ses.clearStorageData()
-
-  // console.log( Object.is(ses, customSes) )
 
   // Load index.html into the new BrowserWindow
   mainWindow.loadFile('index.html')
-  secWindow.loadFile('index.html')
+  // mainWindow.loadURL('https://github.com')
+
+  ses.cookies.remove('https://myappdomain.com', 'cookie1')
+    .then( () => {
+      getCookies()
+    })
+
+  // let cookie = { url:'https://myappdomain.com', name:'cookie1', value:'electron', expirationDate:1622818789 }
+  //
+  // ses.cookies.set(cookie)
+  //   .then( () => {
+  //     console.log('cookie1 set')
+  //     getCookies()
+  //   })
+
+  // mainWindow.webContents.on('did-finish-load', e => {
+  //   getCookies()
+  // })
 
   // Open DevTools - Remove for PRODUCTION!
   mainWindow.webContents.openDevTools();
-  secWindow.webContents.openDevTools();
 
   // Listen for window being closed
   mainWindow.on('closed',  () => {
     mainWindow = null
-  })
-  secWindow.on('closed',  () => {
-    secWindow = null
   })
 }
 
