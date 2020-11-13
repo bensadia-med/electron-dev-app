@@ -1,6 +1,5 @@
 // Modules
-const electron = require('electron')
-const {app, BrowserWindow} = electron
+const {app, BrowserWindow} = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,11 +8,8 @@ let mainWindow
 // Create a new BrowserWindow when `app` is ready
 function createWindow () {
 
-  let primaryDisplay = electron.screen.getPrimaryDisplay()
-
   mainWindow = new BrowserWindow({
-    x: primaryDisplay.bounds.x, y: primaryDisplay.bounds.y,
-    width: primaryDisplay.size.width/2, height: primaryDisplay.size.height,
+    width: 1000, height: 800,
     webPreferences: { nodeIntegration: true }
   })
 
