@@ -10,45 +10,29 @@
   </head>
   <body>
 
-    <h1>Convert splash.png:</h1>
+    <h1>Hello Electron!</h1>
+    <p>Build cross-platform desktop apps with JavaScript, HTML, and CSS</p>
 
-    <button onclick="toPng()">PNG</button>
-    <button onclick="toJpg()">JPG</button>
-    <button onclick="toTag()">Show</button>
-    <br>
-    <img src="" id="preview">
+    <br><button onclick="makeUpper()">Make clipboard uppercase</button>
+    <br><button onclick="showImage()">Show clipboard image</button>
+
+    <br><img src="" id="cbImage">
 
     <script>
 
-      const { nativeImage, ipcRenderer } = require('electron')
-      const fs = require('fs')
+      const { clipboard } = require('electron')
 
-      const splash = nativeImage.createFromPath(`${__dirname}/splash.png`)
+      console.log(clipboard.readText())
 
-      const saveToDesktop = async ( data, ext ) => {
-
-        let desktopPath = await ipcRenderer.invoke( 'app-path' )
-        fs.writeFile( `${desktopPath}/splash.${ext}`, data, console.log )
+      const showImage = e => {
+        let image = clipboard.readImage()
+        document.getElementById('cbImage').src = image.toDataURL()
       }
 
-      const toTag = e => {
-
-        let size = splash.getSize()
-
-        let splashURL = splash.resize({ width: Math.round(size.width/4), height: Math.round(size.height/4) }).toDataURL()
-        document.getElementById('preview').src = splashURL
+      const makeUpper = e => {
+        let cbText = clipboard.readText()
+        clipboard.writeText( cbText.toUpperCase() )
       }
-
-      const toPng = e => {
-        let pngSplash = splash.toPNG()
-        saveToDesktop( pngSplash, 'png' )
-      }
-
-      const toJpg = e => {
-        let jpgSplash = splash.toJPEG(100)
-        saveToDesktop( jpgSplash, 'jpg' )
-      }
-
 
     </script>
   </body>
