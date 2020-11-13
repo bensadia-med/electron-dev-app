@@ -2,17 +2,27 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const { desktopCapturer } = require('electron')
+const { ipcRenderer } = require('electron')
 
+let i = 1
+setInterval( () => {
+  console.log(i)
+  i++
+}, 1000)
 
-document.getElementById('screenshot-button').addEventListener( 'click', () => {
+document.getElementById('talk').addEventListener('click', e => {
 
-  desktopCapturer.getSources({ types:['window'], thumbnailSize:{width:1920, height:1080} })
-    .then( sources => {
+  // ipcRenderer.send( 'channel1', 'Hello from main window')
 
-      console.log(sources)
+  let response = ipcRenderer.sendSync( 'sync-message', 'Waiting for response')
+  console.log(response)
 
-      document.getElementById('screenshot').src = sources[0].thumbnail.toDataURL()
-    })
+})
 
+ipcRenderer.on( 'channel1-response', (e, args) => {
+  console.log(args)
+})
+
+ipcRenderer.on( 'mailbox', (e, args) => {
+  console.log(args)
 })
