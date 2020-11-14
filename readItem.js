@@ -2,43 +2,43 @@
 // Modules
 const {BrowserWindow} = require('electron')
 
-// BrowserWindow
-let bgItemWin
+// Offscreen BrowserWindow
+let offscreenWindow
 
-// New read item method
+// Exported readItem function
 module.exports = (url, callback) => {
 
-  // Create new offscreen BrowserWindow
-  bgItemWin = new BrowserWindow({
-    width: 1000,
-    height: 1000,
+  // Create offscreen window
+  offscreenWindow = new BrowserWindow({
+    width: 500,
+    height: 500,
     show: false,
     webPreferences: {
       offscreen: true
     }
   })
 
-  // Load read item
-  bgItemWin.loadURL(url)
+  // Load item url
+  offscreenWindow.loadURL(url)
 
-  // Wait for page to finish loading
-  bgItemWin.webContents.on('did-finish-load', () => {
+  // Wait for content to finish loading
+  offscreenWindow.webContents.on('did-finish-load', e => {
+
+    // Get page title
+    let title = offscreenWindow.getTitle()
 
     // Get screenshot (thumbnail)
-    bgItemWin.webContents.capturePage((image) => {
+    offscreenWindow.webContents.capturePage( image => {
 
-      // Get image as dataURI
+      // Get image as dataURL
       let screenshot = image.toDataURL()
 
-      // Get page title
-      let title = bgItemWin.getTitle()
-
-      // Return new item via callback
+      // Execute callback with new item object
       callback({ title, screenshot, url })
 
       // Clean up
-      bgItemWin.close()
-      bgItemWin = null
+      offscreenWindow.close()
+      offscreenWindow = null
     })
   })
 }
