@@ -1,122 +1,47 @@
 
-html, body {
-  height: 100%;
-}
-
-body {
-  font: caption;
-  margin: 0;
-  display: flex;
-  flex-flow: column;
-}
-
-button {
-  background: dodgerblue;
-  color: white;
-  border-radius: 5px;
-  border: none;
-  font-size: 20px;
-  outline: none;
-}
-
-input {
-  font-size: 20px;
-  border-radius: 5px;
-  border: 1px solid silver;
-  padding: 0 10px;
-}
-
-input::placeholder {
-  color: lightgray;
-}
-
-header {
-  background: lightgray;
-  display: flex;
-  padding: 10px;
-  font-weight: bold;
-  border-bottom: 1px solid silver;
-  box-shadow: 0px 10px 10px rgba(0,0,0,0.1);
-}
-
-#show-modal {
-  padding: 0px 12px 5px;
-  margin-right: 10px;
-  font-size: 30px;
-}
-
-#search {
-  flex-grow: 1;
-}
-
-main {
-  flex-grow: 1;
-  overflow-y: scroll;
-}
-
 #no-items {
-  font-weight: bold;
-  color: silver;
-  text-align: center;
-  width: 100%;
-  position: absolute;
-  top: 100px;
-  z-index: -1;
+  padding: 2rem 0;
+  color: lightgrey;
+  font-style: italic;
 }
 
-#modal {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.85);
-  display: flex;
-  align-items: center;
-  align-content: center;
-  flex-wrap: wrap;
-  display: none;
+.panel {
+  padding-top: 52px;
+  margin-bottom: 0 !important;
 }
 
-#url {
-  flex-grow: 1;
-  width: 100%;
-  margin: 0 25px 15px;
-  padding: 10px;
-}
-
-#modal button {
-  padding: 10px;
-}
-
-#close-modal {
-  background: white;
-  color: black;
-  margin-left: 15px;
-}
-
-#add-item {
-  margin-left: 25px;
+.panel-heading {
+    position: fixed;
+    width: 100%;
+    margin-top: -52px;
+    z-index: 100;
 }
 
 .read-item {
-  display: flex;
-  align-items: center;
-  align-content: center;
-  border-bottom: lightgray 2px solid;
-  background: #FAFAFA;
-  padding: 10px;
-  border-left: 10px solid lightgray;
+  border-left-width: 10px;
   -webkit-user-select: none;
 }
 
-.read-item:hover {
-  background-color: #EEE;
+.read-item.is-active {
+  background-color: #FAFAFA;
 }
 
-.read-item.selected {
-  border-left-color: dodgerblue;
+#loader {
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
-.read-item img {
-  width: 20%;
-  margin-right: 25px;
+#loader .fa {
+  color: #00D1B2;
+}
+
+#mark-read {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+#mark-read .tag {
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
 }

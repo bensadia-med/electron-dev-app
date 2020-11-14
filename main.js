@@ -1,66 +1,35 @@
+
 // Modules
-const {app, BrowserWindow, ipcMain} = require('electron')
-const windowStateKeeper = require('electron-window-state')
+const {app, ipcMain} = require('electron')
+const mainWindow = require('./mainWindow')
 const readItem = require('./readItem')
-const appMenu = require('./menu')
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+// LIsten for new read item
+ipcMain.on('new-item', (e, itemURL) => {
 
-// Listen for new item request
-ipcMain.on('new-item', (e, itemUrl) => {
+    // Get read item with readItem module
+    readItem( itemURL, (item) => {
 
-  // Get new item and send back to renderer
-  readItem( itemUrl, item => {
-    e.sender.send('new-item-success', item)
-  })
+      // Send to renderer
+      e.sender.send('new-item-success', item)
+    })
 })
 
-// Create a new BrowserWindow when `app` is ready
-function createWindow () {
 
-  // Win state keeper
-  let state = windowStateKeeper({
-    defaultWidth: 500, defaultHeight: 650
-  })
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on('ready', mainWindow.createWindow)
 
-  mainWindow = new BrowserWindow({
-    x: state.x, y: state.y,
-    width: state.width, height: state.height,
-    minWidth: 350, maxWidth: 650, minHeight: 300,
-    webPreferences: {
-      nodeIntegration: true
-    }
-  })
-
-  // Create main app menu
-  appMenu(mainWindow.webContents)
-
-  // Load index.html into the new BrowserWindow
-  mainWindow.loadFile('renderer/main.html')
-
-  // Manage new window state
-  state.manage(mainWindow)
-
-  // Open DevTools - Remove for PRODUCTION!
-  mainWindow.webContents.openDevTools();
-
-  // Listen for window being closed
-  mainWindow.on('closed',  () => {
-    mainWindow = null
-  })
-}
-
-// Electron `app` is ready
-app.on('ready', createWindow)
-
-// Quit when all windows are closed - (Not macOS - Darwin)
+// Quit when all windows are closed.
 app.on('window-all-closed', () => {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') app.quit()
 })
 
-// When app icon is clicked and app is running, (macOS) recreate the BrowserWindow
 app.on('activate', () => {
-  if (mainWindow === null) createWindow()
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) mainWindow.createWindow()
 })

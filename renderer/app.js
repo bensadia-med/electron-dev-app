@@ -1,118 +1,89 @@
 
 // Modules
 const {ipcRenderer} = require('electron')
-const items = require('./items')
+const items = require('./items.js')
+const menu = require('./menu.js')
 
-// Dom Nodes
-let showModal = document.getElementById('show-modal'),
-    closeModal = document.getElementById('close-modal'),
-    modal = document.getElementById('modal'),
-    addItem = document.getElementById('add-item'),
-    itemUrl = document.getElementById('url'),
-    search = document.getElementById('search')
+// Navigate selected item with up/down keys
+$(document).keydown((e) => {
 
-// Open modal from menu
-ipcRenderer.on( 'menu-show-modal', () => {
-  showModal.click()
+  switch (e.key) {
+    case 'ArrowUp':
+      items.changeItem('up')
+      break;
+    case 'ArrowDown':
+      items.changeItem('down')
+      break;
+  }
 })
 
-// Open selected item from menu
-ipcRenderer.on( 'menu-open-item', () => {
-  items.open()
+// Show add-modal
+$('.open-add-modal').click(() => {
+  $('#add-modal').addClass('is-active')
+})
+// Hide add-modal
+$('.close-add-modal').click(() => {
+  $('#add-modal').removeClass('is-active')
 })
 
-// Delete selected item from menu
-ipcRenderer.on( 'menu-delete-item', () => {
-  let selectedItem = items.getSelectedItem()
-  items.delete(selectedItem.index)
+// Handle add-modal submission
+$('#add-button').click(() => {
+
+  // Get URL from input
+  let newItemURL = $('#item-input').val()
+  if(newItemURL) {
+
+    // Disable modal UI
+    $('#item-input').prop('disabled', true)
+    $('#add-button').addClass('is-loading')
+    $('.close-add-modal').addClass('is-disabled')
+
+    // Send URL to main process via IPC
+    ipcRenderer.send('new-item', newItemURL)
+  }
 })
 
-// Open item in native browser from menu
-ipcRenderer.on( 'menu-open-item-native', () => {
-  items.openNative()
+// Listen for new item from main
+ipcRenderer.on('new-item-success', (e, item) => {
+
+  // Add item to items array
+  items.toreadItems.push(item)
+
+  // Save items
+  items.saveItems()
+
+  // Add item
+  items.addItem(item)
+
+  // Close and reset modal
+  $('#add-modal').removeClass('is-active')
+  $('#item-input').prop('disabled', false).val('')
+  $('#add-button').removeClass('is-loading')
+  $('.close-add-modal').removeClass('is-disabled')
+
+  // If first item being added, select it
+  if(items.toreadItems.length === 1)
+    $('.read-item:first()').addClass('is-active')
 })
 
-// Focus the search input from the menu
-ipcRenderer.on( 'menu-focus-search', () => {
-  search.focus()
+// Simulate add click on enter
+$('#item-input').keyup((e) => {
+  if(e.key === 'Enter') $('#add-button').click()
 })
 
-// Filter items with "search"
-search.addEventListener('keyup', e => {
+// Filter items by title
+$('#search').keyup((e) => {
 
-  // Loop items
-  Array.from( document.getElementsByClassName('read-item') ).forEach( item => {
+  // Get current #search input value
+  let filter = $(e.currentTarget).val()
 
-    // Hide items that don't match search value
-    let hasMatch = item.innerText.toLowerCase().includes(search.value)
-    item.style.display = hasMatch ? 'flex' : 'none'
+  $('.read-item').each((i, el) => {
+    $(el).text().toLowerCase().includes(filter) ? $(el).show(): $(el).hide()
   })
 })
 
-// Navigate item selection with up/down arrows
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-    items.changeSelection(e.key)
-  }
-})
-
-// Disable & Enable modal buttons
-const toggleModalButtons = () => {
-
-  // Check state of buttons
-  if (addItem.disabled === true) {
-    addItem.disabled = false
-    addItem.style.opacity = 1
-    addItem.innerText = 'Add Item'
-    closeModal.style.display = 'inline'
-  } else {
-    addItem.disabled = true
-    addItem.style.opacity = 0.5
-    addItem.innerText = 'Adding...'
-    closeModal.style.display = 'none'
-  }
+// Add items when app loads
+if(items.toreadItems.length) {
+  items.toreadItems.forEach(items.addItem)
+  $('.read-item:first()').addClass('is-active')
 }
-
-// Show modal
-showModal.addEventListener('click', e => {
-  modal.style.display = 'flex'
-  itemUrl.focus()
-})
-
-// Hide modal
-closeModal.addEventListener('click', e => {
-  modal.style.display = 'none'
-})
-
-// Handle new item
-addItem.addEventListener('click', e => {
-
-  // Check a url exists
-  if (itemUrl.value) {
-
-    // Send new item url to main process
-    ipcRenderer.send('new-item', itemUrl.value)
-
-    // Disable buttons
-    toggleModalButtons()
-  }
-})
-
-// Listen for new item from main process
-ipcRenderer.on('new-item-success', (e, newItem) => {
-
-  // Add new item to "items" node
-  items.addItem(newItem, true)
-
-  // Enable buttons
-  toggleModalButtons()
-
-  // Hide modal and clear value
-  modal.style.display = 'none'
-  itemUrl.value = ''
-})
-
-// Listen for keyboard submit
-itemUrl.addEventListener('keyup', e => {
-  if( e.key === 'Enter' ) addItem.click()
-})

@@ -1,184 +1,123 @@
 
-// Modules
-const {shell} = require('electron')
-const fs = require('fs')
+// Track items with array
+exports.toreadItems = JSON.parse(localStorage.getItem('toreadItems')) || []
 
-// DOM nodes
-let items = document.getElementById('items')
+// Save items to localstorage
+exports.saveItems = () => {
+  localStorage.setItem('toreadItems', JSON.stringify(this.toreadItems))
+}
 
-// Get readerJS content
-let readerJS
-fs.readFile(`${__dirname}/reader.js`, (err, data) => {
-  readerJS = data.toString()
-})
+// Toggle item as selected
+exports.selectItem = (e) => {
+  $('.read-item').removeClass('is-active')
+  $(e.currentTarget).addClass('is-active')
+}
 
-// Track items in storage
-exports.storage = JSON.parse(localStorage.getItem('readit-items')) || []
+// Select next/prev item
+exports.changeItem = (direction) => {
 
-// Listen for "done" message from reader window
-window.addEventListener('message', e => {
+  // Get current active item
+  let activeItem = $('.read-item.is-active')
 
-  // Check for correct message
-  if (e.data.action === 'delete-reader-item') {
+  // Check direction and get next or previous read-item
+  let newItem = (direction === 'down') ? activeItem.next('.read-item') : activeItem.prev('.read-item')
 
-    // Delete item at given index
-    this.delete(e.data.itemIndex)
-
-    // Close the reader window
-    e.source.close()
+  // Only if item exists, make selection change
+  if(newItem.length) {
+    activeItem.removeClass('is-active')
+    newItem.addClass('is-active')
   }
-})
+}
 
-// Delete item
-exports.delete = itemIndex => {
+
+// Window function
+// Delete item by index
+window.deleteItem = (i = false) => {
+
+  // Set i to active item if not passed as argument
+  if (i === false) i = ($('.read-item.is-active').index() - 1)
 
   // Remove item from DOM
-  items.removeChild( items.childNodes[itemIndex] )
+  $('.read-item').eq(i).remove()
 
-  // Remove item from storage
-  this.storage.splice(itemIndex, 1)
+  // Remove from toreadItems array
+  this.toreadItems = this.toreadItems.filter((item, index) => {
+    return index !== i
+  })
 
-  // Persist storage
-  this.save()
+  // Update storage
+  this.saveItems()
 
-  // Select previous item or new top item
-  if (this.storage.length) {
+  // Select prev item or none if list empty
+  if (this.toreadItems.length) {
 
-    // Get new selected item index
-    let = newSelectedItemIndex = (itemIndex === 0) ? 0 : itemIndex - 1
+    // If first item was deleted, select new first item in list, else previous item
+    let newIndex = (i === 0) ? 0 : i - 1
 
-    // Select item at new index
-    document.getElementsByClassName('read-item')[newSelectedItemIndex].classList.add('selected')
+    // Assign active class to new index
+    $('.read-item').eq(newIndex).addClass('is-active')
+
+  // Else show 'no items' message
+  } else {
+    $('#no-items').show()
   }
 }
 
-// Get selected item index
-exports.getSelectedItem = () => {
+// Open item in default browser
+window.openInBrowser = () => {
 
-  // Get selected node
-  let currentItem = document.getElementsByClassName('read-item selected')[0]
-
-  // Get item index
-  let itemIndex = 0
-  let child = currentItem
-  while( (child = child.previousElementSibling) != null ) itemIndex++
-
-  // Return selected item and index
-  return { node: currentItem, index: itemIndex }
-}
-
-// Persist storage
-exports.save = () => {
-  localStorage.setItem('readit-items', JSON.stringify(this.storage))
-}
-
-// Set item as selected
-exports.select = e => {
-
-  // Remove currently selected item class
-  this.getSelectedItem().node.classList.remove('selected')
-
-  // Add to clicked item
-  e.currentTarget.classList.add('selected')
-}
-
-// Move to newly selected item
-exports.changeSelection = direction => {
+  // Only if items exists
+  if ( !this.toreadItems.length ) return
 
   // Get selected item
-  let currentItem = this.getSelectedItem()
+  let targetItem = $('.read-item.is-active')
 
-  // Handle up/down
-  if (direction === 'ArrowUp' && currentItem.node.previousElementSibling) {
-    currentItem.node.classList.remove('selected')
-    currentItem.node.previousElementSibling.classList.add('selected')
-
-  } else if (direction === 'ArrowDown' && currentItem.node.nextElementSibling) {
-    currentItem.node.classList.remove('selected')
-    currentItem.node.nextElementSibling.classList.add('selected')
-  }
+  // Open in Browser
+  require('electron').shell.openExternal(targetItem.data('url'))
 }
 
-// Open selected item in native browser
-exports.openNative = () => {
 
-  // Only if we have items (in case of menu open)
-  if ( !this.storage.length ) return
+// Open item for reading
+window.openItem = () => {
 
-  // Get selected item
-  let selectedItem = this.getSelectedItem()
-
-  // Get item's url
-  let contentURL = selectedItem.node.dataset.url
-
-  // Open in user's default system browser
-  shell.openExternal(contentURL)
-}
-
-// Open selected item
-exports.open = () => {
-
-  // Only if we have items (in case of menu open)
-  if ( !this.storage.length ) return
+  // Only if items have been added
+  if( !this.toreadItems.length ) return
 
   // Get selected item
-  let selectedItem = this.getSelectedItem()
+  let targetItem = $('.read-item.is-active')
 
-  // Get item's url
-  let contentURL = selectedItem.node.dataset.url
+  // Get item's content url (encoded)
+  let contentURL = encodeURIComponent(targetItem.data('url'))
 
-  // Open item in proxy BrowserWindow
-  let readerWin = window.open(contentURL, '', `
-    maxWidth=2000,
-    maxHeight=2000,
-    width=1200,
-    height=800,
-    backgroundColor=#DEDEDE,
-    nodeIntegration=0,
-    contextIsolation=1
-  `)
+  // Get item index to pass to proxy window
+  let itemIndex = targetItem.index() - 1
 
-  // Inject JavaScript with specific item index (selectedItem.index)
-  readerWin.eval( readerJS.replace('{{index}}', selectedItem.index) )
+  // Reader window URL
+  let readerWinURL = `file://${__dirname}/reader.html?url=${contentURL}&itemIndex=${itemIndex}`
+
+  // Open item in new proxy BrowserWindow
+  let readerWin = window.open(readerWinURL, targetItem.data('title'))
 }
 
 // Add new item
-exports.addItem = (item, isNew = false) => {
+exports.addItem = (item) => {
 
-  // Create a new DOM node
-  let itemNode = document.createElement('div')
+  // Hide 'no items' message
+  $('#no-items').hide()
 
-  // Assign "read-item" class
-  itemNode.setAttribute('class', 'read-item')
+  // New item html
+  let itemHTML = `<a class="panel-block read-item" data-url="${item.url}" data-title="${item.title}">
+                    <figure class="image has-shadow is-64x64 thumb">
+                      <img src="${item.screenshot}">
+                    </figure>
+                    <h2 class="title is-4 column">${item.title}</h2>
+                  </a>`
+  // Apppend to read-list
+  $('#read-list').append(itemHTML)
 
-  // Set item url as data attribute
-  itemNode.setAttribute('data-url', item.url)
-
-  // Add inner HTML
-  itemNode.innerHTML = `<img src="${item.screenshot}"><h2>${item.title}</h2>`
-
-  // Append new node to "items"
-  items.appendChild(itemNode)
-
-  // Attach click handler to select
-  itemNode.addEventListener('click', this.select)
-
-  // Attach doubleclick handler to open
-  itemNode.addEventListener('dblclick', this.open)
-
-  // If this is the first item, select it
-  if (document.getElementsByClassName('read-item').length === 1) {
-    itemNode.classList.add('selected')
-  }
-
-  // Add item to storage and persist
-  if(isNew) {
-    this.storage.push(item)
-    this.save()
-  }
+  // Attach select event handler
+  $('.read-item')
+    .off('click, dblclick')
+    .on('click', this.selectItem)
+    .on('dblclick', window.openItem)
 }
-
-// Add items from storage when app loads
-this.storage.forEach( item => {
-  this.addItem(item)
-})
